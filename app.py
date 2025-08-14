@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import datetime, timedelta
+from streamlit_js_eval import streamlit_js_eval
 
 # ----------------- FONCTION DE CALCUL -----------------
 def options_programmation(
@@ -65,12 +66,23 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("🧺 Programmateur Machine à Laver")
-st.write("Calcule automatiquement les **incréments de fin** qui respectent ta plage horaire.")
+st.title("🧺 Programmateur Machine à Laver (heure locale navigateur)")
+st.write("Calcule automatiquement les **incréments de fin** qui respectent la plage horaire.")
+
+# ----------------- RÉCUPÉRATION HEURE LOCALE -----------------
+if st.button("🔄 Rafraîchir l'heure du navigateur"):
+    browser_time_str = streamlit_js_eval(js_expressions="new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})", key="refresh_time")
+else:
+    browser_time_str = None
+
+if browser_time_str:
+    heure_actuelle_default = datetime.strptime(browser_time_str, "%H:%M").time()
+else:
+    heure_actuelle_default = datetime.now().time()  # fallback si JS non dispo
 
 # ----------------- INIT SESSION STATE -----------------
 if "heure_affichee" not in st.session_state:
-    st.session_state.heure_affichee = datetime.now().time()
+    st.session_state.heure_affichee = heure_actuelle_default
 if "duree_cycle" not in st.session_state:
     st.session_state.duree_cycle = "1:40"
 if "debut_fenetre" not in st.session_state:
@@ -81,10 +93,11 @@ if "fin_fenetre" not in st.session_state:
 # ----------------- AFFICHAGE HEURE + RAFRAÎCHIR -----------------
 col1, col2 = st.columns([2, 1])
 with col1:
-    st.time_input("⏰ Heure actuelle", value=st.session_state.heure_affichee, disabled=True)
+    heure_saisie = st.time_input("⏰ Heure actuelle", value=st.session_state.heure_affichee, step=timedelta(minutes=10))
+    st.session_state.heure_affichee = heure_saisie
 with col2:
     if st.button("🔄 Rafraîchir l'heure"):
-        st.session_state.heure_affichee = datetime.now().time()
+        st.session_state.heure_affichee = heure_actuelle_default
 
 # ----------------- FORMULAIRE -----------------
 st.session_state.duree_cycle = st.text_input("⏳ Durée du cycle (H:MM)", value=st.session_state.duree_cycle)
@@ -107,4 +120,3 @@ if st.button("📌 Calculer"):
             st.markdown(f"- **+{s['increment_h']}h** → début `{s['debut_cycle']}` → fin `{s['fin_cycle']}`")
     else:
         st.error("❌ Aucune option trouvée dans la fenêtre donnée.")
-
