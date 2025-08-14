@@ -1,6 +1,10 @@
 import streamlit as st
 from datetime import datetime, timedelta
 from streamlit_js_eval import streamlit_js_eval
+import pytz
+
+all_timezones = pytz.all_timezones
+print(all_timezones)
 
 # ----------------- FONCTION DE CALCUL -----------------
 def options_programmation(
@@ -46,7 +50,24 @@ def get_heure_locale():
     # if browser_time_str:
     #     return datetime.strptime(browser_time_str, "%H:%M").time()
     
-    return (datetime.now() + timedelta(hours=2)).time() # fallback si JS non dispo
+    heure = datetime.now(pytz.timezone('Europe/Paris'))
+    delta_min = heure.minute % 10
+    if(delta_min > 5):
+        delta_min = delta_min - 10
+
+    return (heure - timedelta(minutes=delta_min)).time().replace(second=0, microsecond=0)
+
+@st.dialog("Résultats")
+def show_solutions(item):
+    if solutions:
+        st.success("✅ Options possibles :")
+        for s in solutions:
+            st.markdown(f"- **+{s['increment_h']}h** → début `{s['debut_cycle']}` → fin `{s['fin_cycle']}`")
+    else:
+        st.error("❌ Aucune option trouvée dans la fenêtre donnée.")
+    
+    if st.button("Fermer"):
+        st.rerun()
 
 # ----------------- CONFIG PAGE -----------------
 st.set_page_config(page_title="Programmateur Machine à Laver", page_icon="🧺", layout="wide")
@@ -122,11 +143,5 @@ if st.button("📌 Calculer"):
         st.session_state.premier_increment,
         st.session_state.increment_suivant
     )
+    show_solutions(solutions)
 
-    st.markdown("---")
-    if solutions:
-        st.success("✅ Options possibles :")
-        for s in solutions:
-            st.markdown(f"- **+{s['increment_h']}h** → début `{s['debut_cycle']}` → fin `{s['fin_cycle']}`")
-    else:
-        st.error("❌ Aucune option trouvée dans la fenêtre donnée.")
