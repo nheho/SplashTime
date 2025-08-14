@@ -4,7 +4,6 @@ from streamlit_js_eval import streamlit_js_eval
 import pytz
 
 all_timezones = pytz.all_timezones
-print(all_timezones)
 
 # ----------------- FONCTION DE CALCUL -----------------
 def options_programmation(
