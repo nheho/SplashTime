@@ -41,10 +41,10 @@ def options_programmation(
 
 # ----------------- RÉCUPÉRATION HEURE LOCALE -----------------
 def get_heure_locale():
-    browser_time_str = streamlit_js_eval(js_expressions="new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})", key="refresh_time")
+    # browser_time_str = streamlit_js_eval(js_expressions="new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})", key="refresh_time")
 
-    if browser_time_str:
-        return datetime.strptime(browser_time_str, "%H:%M").time()
+    # if browser_time_str:
+    #     return datetime.strptime(browser_time_str, "%H:%M").time()
     
     return datetime.now().time() + timedelta(hours=2) # fallback si JS non dispo
 
