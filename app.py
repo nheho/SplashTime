@@ -46,7 +46,7 @@ def get_heure_locale():
     # if browser_time_str:
     #     return datetime.strptime(browser_time_str, "%H:%M").time()
     
-    return datetime.now().time() + timedelta(hours=2) # fallback si JS non dispo
+    return (datetime.now() + timedelta(hours=2)).time() # fallback si JS non dispo
 
 # ----------------- CONFIG PAGE -----------------
 st.set_page_config(page_title="Programmateur Machine à Laver", page_icon="🧺", layout="wide")
