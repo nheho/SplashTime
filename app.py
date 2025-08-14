@@ -83,7 +83,7 @@ def show_solutions(item):
         st.rerun()
 
 # ----------------- CONFIG PAGE -----------------
-st.set_page_config(page_title="Programmateur Machine à Laver", page_icon="🧺", layout="wide")
+st.set_page_config(page_title="Programmateur Machine à Laver", page_icon="🧺", layout="centered")
 
 # ----------------- CSS CUSTOM -----------------
 st.markdown("""
