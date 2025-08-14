@@ -8,8 +8,8 @@ def options_programmation(
     duree_cycle_str,
     debut_fenetre_str,
     fin_fenetre_str,
-    premier_increment_h=3,
-    increment_suivant_h=1,
+    premier_increment_h_str,
+    increment_suivant_h_str,
     max_increment_h=12
 ):
     now = datetime.strptime(heure_actuelle_str, "%H:%M")
@@ -20,6 +20,9 @@ def options_programmation(
 
     debut_fenetre = now.replace(hour=debut_fenetre.hour, minute=debut_fenetre.minute)
     fin_fenetre = now.replace(hour=fin_fenetre.hour, minute=fin_fenetre.minute)
+
+    premier_increment_h = int(premier_increment_h_str)
+    increment_suivant_h = int(increment_suivant_h_str)
 
     increments = [premier_increment_h + i * increment_suivant_h for i in range(max_increment_h)]
     solutions = []
@@ -35,6 +38,15 @@ def options_programmation(
             })
 
     return solutions
+
+# ----------------- RÉCUPÉRATION HEURE LOCALE -----------------
+def get_heure_locale():
+    browser_time_str = streamlit_js_eval(js_expressions="new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})", key="refresh_time")
+
+    if browser_time_str:
+        return datetime.strptime(browser_time_str, "%H:%M").time()
+    
+    return datetime.now().time()  # fallback si JS non dispo
 
 # ----------------- CONFIG PAGE -----------------
 st.set_page_config(page_title="Programmateur Machine à Laver", page_icon="🧺", layout="wide")
@@ -69,26 +81,19 @@ st.markdown("""
 st.title("🧺 Programmateur Machine à Laver (heure locale navigateur)")
 st.write("Calcule automatiquement les **incréments de fin** qui respectent la plage horaire.")
 
-# ----------------- RÉCUPÉRATION HEURE LOCALE -----------------
-if st.button("🔄 Rafraîchir l'heure du navigateur"):
-    browser_time_str = streamlit_js_eval(js_expressions="new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})", key="refresh_time")
-else:
-    browser_time_str = None
-
-if browser_time_str:
-    heure_actuelle_default = datetime.strptime(browser_time_str, "%H:%M").time()
-else:
-    heure_actuelle_default = datetime.now().time()  # fallback si JS non dispo
-
 # ----------------- INIT SESSION STATE -----------------
 if "heure_affichee" not in st.session_state:
-    st.session_state.heure_affichee = heure_actuelle_default
+    st.session_state.heure_affichee = get_heure_locale()
 if "duree_cycle" not in st.session_state:
     st.session_state.duree_cycle = "1:40"
 if "debut_fenetre" not in st.session_state:
     st.session_state.debut_fenetre = datetime.strptime("14:15", "%H:%M").time()
 if "fin_fenetre" not in st.session_state:
     st.session_state.fin_fenetre = datetime.strptime("16:45", "%H:%M").time()
+if "premier_increment" not in st.session_state:
+    st.session_state.premier_increment = 3 # heures
+if "increment_suivant" not in st.session_state:
+    st.session_state.increment_suivant = 1 # heure
 
 # ----------------- AFFICHAGE HEURE + RAFRAÎCHIR -----------------
 col1, col2 = st.columns([2, 1])
@@ -97,12 +102,15 @@ with col1:
     st.session_state.heure_affichee = heure_saisie
 with col2:
     if st.button("🔄 Rafraîchir l'heure"):
-        st.session_state.heure_affichee = heure_actuelle_default
+        st.session_state.heure_affichee = get_heure_locale()
 
 # ----------------- FORMULAIRE -----------------
-st.session_state.duree_cycle = st.text_input("⏳ Durée du cycle (H:MM)", value=st.session_state.duree_cycle)
 st.session_state.debut_fenetre = st.time_input("🟢 Début de la fenêtre", value=st.session_state.debut_fenetre)
 st.session_state.fin_fenetre = st.time_input("🔴 Fin de la fenêtre", value=st.session_state.fin_fenetre)
+with st.expander("Paramètres de cycle", expanded=False):
+    st.session_state.duree_cycle = st.text_input("⏳ Durée du cycle (H:MM)", value=st.session_state.duree_cycle)
+    st.session_state.premier_increment = st.number_input("⏩ Premier incrément (heures)", min_value=1, max_value=12, value=st.session_state.premier_increment)
+    st.session_state.increment_suivant = st.number_input("⏩ Incrément suivant (heures)", min_value=1, max_value=12, value=st.session_state.increment_suivant)
 
 # ----------------- CALCUL -----------------
 if st.button("📌 Calculer"):
@@ -110,7 +118,9 @@ if st.button("📌 Calculer"):
         st.session_state.heure_affichee.strftime("%H:%M"),
         st.session_state.duree_cycle,
         st.session_state.debut_fenetre.strftime("%H:%M"),
-        st.session_state.fin_fenetre.strftime("%H:%M")
+        st.session_state.fin_fenetre.strftime("%H:%M"),
+        st.session_state.premier_increment,
+        st.session_state.increment_suivant
     )
 
     st.markdown("---")
