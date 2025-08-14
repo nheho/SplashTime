@@ -14,7 +14,7 @@ def options_programmation(
     fin_fenetre_str,
     premier_increment_h_str,
     increment_suivant_h_str,
-    max_increment_h=12
+    max_increment_h=16
 ):
     now = datetime.strptime(heure_actuelle_str, "%H:%M")
     duree_cycle_parts = duree_cycle_str.split(":")
@@ -31,6 +31,7 @@ def options_programmation(
     increments = [premier_increment_h + i * increment_suivant_h for i in range(max_increment_h)]
     solutions = []
 
+    # Recherche pour le jour actuel
     for inc in increments:
         fin_cycle = now + timedelta(hours=inc)
         debut_cycle = fin_cycle - duree_cycle
@@ -38,18 +39,31 @@ def options_programmation(
             solutions.append({
                 "increment_h": inc,
                 "debut_cycle": debut_cycle.strftime("%H:%M"),
-                "fin_cycle": fin_cycle.strftime("%H:%M")
+                "fin_cycle": fin_cycle.strftime("%H:%M"),
+                "jour": "Aujourd'hui"
             })
+
+    # Si aucune solution, recherche pour le jour suivant
+    if not solutions:
+        debut_fenetre_jour_suivant = debut_fenetre + timedelta(days=1)
+        fin_fenetre_jour_suivant = fin_fenetre + timedelta(days=1)
+        now_jour_suivant = now
+        for inc in increments:
+            fin_cycle = now_jour_suivant + timedelta(hours=inc)
+            debut_cycle = fin_cycle - duree_cycle
+            if debut_fenetre_jour_suivant <= debut_cycle and fin_cycle <= fin_fenetre_jour_suivant:
+                solutions.append({
+                    "increment_h": inc,
+                    "debut_cycle": debut_cycle.strftime("%H:%M"),
+                    "fin_cycle": fin_cycle.strftime("%H:%M"),
+                    "jour": "Demain"
+                })
 
     return solutions
 
 # ----------------- RÉCUPÉRATION HEURE LOCALE -----------------
 def get_heure_locale():
-    # browser_time_str = streamlit_js_eval(js_expressions="new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})", key="refresh_time")
-
-    # if browser_time_str:
-    #     return datetime.strptime(browser_time_str, "%H:%M").time()
-    
+        
     heure = datetime.now(pytz.timezone('Europe/Paris'))
     delta_min = heure.minute % 10
     if(delta_min > 5):
@@ -59,9 +73,9 @@ def get_heure_locale():
 
 @st.dialog("Résultats")
 def show_solutions(item):
-    if solutions:
-        st.success("✅ Options possibles :")
-        for s in solutions:
+    if item:
+        st.success(f"✅ Options possibles : {item[0]['jour']}")
+        for s in item:
             st.markdown(f"- **+{s['increment_h']}h** → début `{s['debut_cycle']}` → fin `{s['fin_cycle']}`")
     else:
         st.error("❌ Aucune option trouvée dans la fenêtre donnée.")
@@ -80,7 +94,7 @@ st.markdown("""
         font-family: 'Segoe UI', sans-serif;
     }
     .block-container {
-        padding-top: 1rem;
+        padding-top: 2rem;
         padding-bottom: 1rem;
     }
     h1, h2, h3 {
