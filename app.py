@@ -108,15 +108,6 @@ st.markdown("""
     }
     .stButton > button:hover {
         background-color: #2980b9;
-    }            
-    .button-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    .button-row > div {
-        flex: 1 1 45%;
-        min-width: 120px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -149,17 +140,6 @@ with col2_hr:
         st.session_state.heure_affichee = get_heure_locale()
 
 # ----------------- BOUTONS NUIT / JOUR -----------------
-# col1_pr, col2_pr = st.columns([1, 1], gap=None, vertical_alignment="center", border=False, width=190)
-# with col1_pr:
-#     if st.button("🌜 Nuit"):
-#         st.session_state.debut_fenetre = datetime.strptime("02:00", "%H:%M").time()
-#         st.session_state.fin_fenetre = datetime.strptime("07:00", "%H:%M").time()
-# with col2_pr:
-#     if st.button("🌞 Jour"):
-#         st.session_state.debut_fenetre = datetime.strptime("14:00", "%H:%M").time()
-#         st.session_state.fin_fenetre = datetime.strptime("17:00", "%H:%M").time()
-
-st.markdown('<div class="button-row">', unsafe_allow_html=True)
 col1_pr, col2_pr = st.columns([1, 1], gap="small", vertical_alignment="center", border=False, width=210)
 with col1_pr:
     if st.button("🌜 Nuit", key="nuit"):
@@ -169,7 +149,6 @@ with col2_pr:
     if st.button("🌞 Jour", key="jour"):
         st.session_state.debut_fenetre = datetime.strptime("14:00", "%H:%M").time()
         st.session_state.fin_fenetre = datetime.strptime("17:00", "%H:%M").time()
-st.markdown('</div>', unsafe_allow_html=True)
 
 # ----------------- FORMULAIRE -----------------
 st.session_state.debut_fenetre = st.time_input("🟢 Début de la fenêtre", value=st.session_state.debut_fenetre)
