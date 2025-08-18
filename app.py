@@ -121,26 +121,38 @@ if "heure_affichee" not in st.session_state:
 if "duree_cycle" not in st.session_state:
     st.session_state.duree_cycle = "1:40"
 if "debut_fenetre" not in st.session_state:
-    st.session_state.debut_fenetre = datetime.strptime("14:15", "%H:%M").time()
+    st.session_state.debut_fenetre = datetime.strptime("14:00", "%H:%M").time()
 if "fin_fenetre" not in st.session_state:
-    st.session_state.fin_fenetre = datetime.strptime("16:45", "%H:%M").time()
+    st.session_state.fin_fenetre = datetime.strptime("17:00", "%H:%M").time()
 if "premier_increment" not in st.session_state:
     st.session_state.premier_increment = 3 # heures
 if "increment_suivant" not in st.session_state:
     st.session_state.increment_suivant = 1 # heure
 
 # ----------------- AFFICHAGE HEURE + RAFRAÎCHIR -----------------
-col1, col2 = st.columns([2, 1])
-with col1:
+col1_hr, col2_hr = st.columns([2, 1])
+with col1_hr:
     heure_saisie = st.time_input("⏰ Heure actuelle", value=st.session_state.heure_affichee, step=timedelta(minutes=10))
     st.session_state.heure_affichee = heure_saisie
-with col2:
+    
+with col2_hr:
     if st.button("🔄 Rafraîchir l'heure"):
         st.session_state.heure_affichee = get_heure_locale()
+
+col1_pr, col2_pr = st.columns([1, 1], gap=None, vertical_alignment="center", border=False, width=190)
+with col1_pr:
+    if st.button("🌜 Nuit"):
+        st.session_state.debut_fenetre = datetime.strptime("02:00", "%H:%M").time()
+        st.session_state.fin_fenetre = datetime.strptime("07:00", "%H:%M").time()
+with col2_pr:
+    if st.button("🌞 Jour"):
+        st.session_state.debut_fenetre = datetime.strptime("14:00", "%H:%M").time()
+        st.session_state.fin_fenetre = datetime.strptime("17:00", "%H:%M").time()
 
 # ----------------- FORMULAIRE -----------------
 st.session_state.debut_fenetre = st.time_input("🟢 Début de la fenêtre", value=st.session_state.debut_fenetre)
 st.session_state.fin_fenetre = st.time_input("🔴 Fin de la fenêtre", value=st.session_state.fin_fenetre)
+
 with st.expander("Paramètres de cycle", expanded=False):
     st.session_state.duree_cycle = st.text_input("⏳ Durée du cycle (H:MM)", value=st.session_state.duree_cycle)
     st.session_state.premier_increment = st.number_input("⏩ Premier incrément (heures)", min_value=1, max_value=12, value=st.session_state.premier_increment)
